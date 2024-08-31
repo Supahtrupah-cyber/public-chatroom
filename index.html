@@ -3,28 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Public Chatroom</title>
+    <title>P2P Chatroom</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
         }
         #chatbox {
             flex: 1;
             overflow-y: auto;
             padding: 10px;
+            background-color: white;
             border-bottom: 1px solid #ccc;
-            background-color: #fff;
         }
         #messageForm {
             display: flex;
-            background-color: #eee;
             padding: 10px;
+            background-color: #eee;
         }
         #messageInput {
             flex: 1;
@@ -33,61 +33,80 @@
             border-radius: 4px;
         }
         #sendButton {
+            margin-left: 10px;
             padding: 10px 20px;
             background-color: #28a745;
             color: white;
             border: none;
             border-radius: 4px;
-            margin-left: 10px;
             cursor: pointer;
+        }
+        #peerId {
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-bottom: 1px solid #ccc;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
+<div id="peerId">
+    Your ID: <span id="myId">...</span>
+</div>
 <div id="chatbox">
     <!-- Messages will appear here -->
 </div>
-
 <form id="messageForm">
     <input type="text" id="messageInput" placeholder="Type your message here..." required>
     <button type="submit" id="sendButton">Send</button>
 </form>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.10.0/simplepeer.min.js"></script>
 <script>
+    const myIdElement = document.getElementById('myId');
     const chatbox = document.getElementById('chatbox');
     const messageForm = document.getElementById('messageForm');
     const messageInput = document.getElementById('messageInput');
 
-    // Simple localStorage-based chat (for demonstration purposes)
-    function loadMessages() {
-        const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-        chatbox.innerHTML = '';
-        messages.forEach(msg => {
-            const div = document.createElement('div');
-            div.textContent = msg;
-            chatbox.appendChild(div);
-        });
-        chatbox.scrollTop = chatbox.scrollHeight;
-    }
+    const peer = new SimplePeer({ initiator: location.hash === '#1', trickle: false });
 
-    function saveMessage(message) {
-        const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-        messages.push(message);
-        localStorage.setItem('chatMessages', JSON.stringify(messages));
-        loadMessages();
-    }
+    peer.on('signal', data => {
+        myIdElement.textContent = JSON.stringify(data);
+    });
+
+    peer.on('data', data => {
+        const div = document.createElement('div');
+        div.textContent = data;
+        chatbox.appendChild(div);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    });
+
+    peer.on('connect', () => {
+        alert('Connected to peer');
+    });
 
     messageForm.addEventListener('submit', function (e) {
         e.preventDefault();
         const message = messageInput.value.trim();
         if (message) {
-            saveMessage(message);
+            peer.send(message);
+            const div = document.createElement('div');
+            div.textContent = "You: " + message;
+            chatbox.appendChild(div);
+            chatbox.scrollTop = chatbox.scrollHeight;
             messageInput.value = '';
         }
     });
 
-    loadMessages();
+    // Manually set up the peer connection by pasting the ID from another peer
+    function connectToPeer() {
+        const peerId = prompt("Enter peer ID:");
+        peer.signal(JSON.parse(peerId));
+    }
+
+    // Allow connection by clicking on the peer ID
+    myIdElement.addEventListener('click', connectToPeer);
 </script>
 
 </body>
