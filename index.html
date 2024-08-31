@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P2P Chatroom with Gun.js</title>
+    <title>Socket.io Chatroom</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -53,35 +53,31 @@
     <button type="submit" id="sendButton">Send</button>
 </form>
 
-<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+<!-- Include Socket.io -->
+<script src="/socket.io/socket.io.js"></script>
 <script>
-    // Initialize Gun.js
-    const gun = Gun();
-
-    // Reference to the 'chatroom' node in the Gun.js database
-    const messages = gun.get('chatroom');
+    // Connect to the Socket.io server
+    const socket = io();
 
     // DOM elements
     const chatbox = document.getElementById('chatbox');
     const messageForm = document.getElementById('messageForm');
     const messageInput = document.getElementById('messageInput');
 
-    // Listen for new messages and append them to the chatbox
-    messages.map().once(data => {
-        if (data) {
-            const div = document.createElement('div');
-            div.textContent = data;
-            chatbox.appendChild(div);
-            chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the latest message
-        }
+    // Listen for 'chat message' events from the server
+    socket.on('chat message', function(msg) {
+        const div = document.createElement('div');
+        div.textContent = msg;
+        chatbox.appendChild(div);
+        chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the latest message
     });
 
-    // Send a new message when the form is submitted
-    messageForm.addEventListener('submit', function (e) {
+    // Send a message when the form is submitted
+    messageForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const message = messageInput.value.trim();
         if (message) {
-            messages.set(message); // Store the message in the Gun.js database
+            socket.emit('chat message', message); // Emit 'chat message' event to the server
             messageInput.value = ''; // Clear the input field
         }
     });
