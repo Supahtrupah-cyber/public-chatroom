@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Chatroom</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #chatbox {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            background-color: #fff;
+        }
+        #messageForm {
+            display: flex;
+            background-color: #eee;
+            padding: 10px;
+        }
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #sendButton {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="chatbox">
+    <!-- Messages will appear here -->
+</div>
+
+<form id="messageForm">
+    <input type="text" id="messageInput" placeholder="Type your message here..." required>
+    <button type="submit" id="sendButton">Send</button>
+</form>
+
+<script>
+    const chatbox = document.getElementById('chatbox');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+
+    // Simple localStorage-based chat (for demonstration purposes)
+    function loadMessages() {
+        const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        chatbox.innerHTML = '';
+        messages.forEach(msg => {
+            const div = document.createElement('div');
+            div.textContent = msg;
+            chatbox.appendChild(div);
+        });
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    function saveMessage(message) {
+        const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        messages.push(message);
+        localStorage.setItem('chatMessages', JSON.stringify(messages));
+        loadMessages();
+    }
+
+    messageForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (message) {
+            saveMessage(message);
+            messageInput.value = '';
+        }
+    });
+
+    loadMessages();
+</script>
+
+</body>
+</html>
